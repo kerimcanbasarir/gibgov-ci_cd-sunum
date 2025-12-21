@@ -10,6 +10,9 @@ jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: gibgov-sunum
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -19,6 +22,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
+          cache-dependency-path: gibgov-sunum/package-lock.json
 
       - name: Install dependencies
         run: npm ci
@@ -29,6 +33,9 @@ jobs:
   type-check:
     name: Type Check
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: gibgov-sunum
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -38,6 +45,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
+          cache-dependency-path: gibgov-sunum/package-lock.json
 
       - name: Install dependencies
         run: npm ci
@@ -49,6 +57,9 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     needs: [lint, type-check]
+    defaults:
+      run:
+        working-directory: gibgov-sunum
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -58,6 +69,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
+          cache-dependency-path: gibgov-sunum/package-lock.json
 
       - name: Install dependencies
         run: npm ci
@@ -69,7 +81,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: build-output
-          path: .next
+          path: gibgov-sunum/.next
           retention-days: 7
 
   deploy:
@@ -77,6 +89,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    defaults:
+      run:
+        working-directory: gibgov-sunum
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -86,6 +101,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
+          cache-dependency-path: gibgov-sunum/package-lock.json
 
       - name: Install dependencies
         run: npm ci
