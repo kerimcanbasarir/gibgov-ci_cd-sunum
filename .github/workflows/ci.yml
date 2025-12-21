@@ -5,7 +5,6 @@ on:
     branches: [main, develop]
   pull_request:
     branches: [main]
-
 jobs:
   lint:
     name: Lint
@@ -20,8 +19,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
           cache-dependency-path: gibgov-sunum/package-lock.json
 
       - name: Install dependencies
@@ -43,8 +42,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
           cache-dependency-path: gibgov-sunum/package-lock.json
 
       - name: Install dependencies
@@ -67,8 +66,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
           cache-dependency-path: gibgov-sunum/package-lock.json
 
       - name: Install dependencies
@@ -99,8 +98,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
           cache-dependency-path: gibgov-sunum/package-lock.json
 
       - name: Install dependencies
