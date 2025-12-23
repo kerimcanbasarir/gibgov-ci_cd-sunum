@@ -1,5 +1,6 @@
 'use client';
 
+import { Highlight, themes } from 'prism-react-renderer';
 import { Slide, SlideContent as SlideContentType } from '@/data/presentationData';
 
 interface SlideContentProps {
@@ -8,19 +9,46 @@ interface SlideContentProps {
   sectionIcon: string;
 }
 
+// Desteklenmeyen dilleri desteklenen dillere map et
+const languageMap: Record<string, string> = {
+  dockerfile: 'bash',
+  toml: 'yaml',
+  shell: 'bash',
+  sh: 'bash',
+};
+
 function CodeBlock({ code, language }: { code: string; language?: string }) {
+  const inputLang = language || 'typescript';
+  const lang = languageMap[inputLang] || inputLang;
+
   return (
     <div className="relative group">
       {language && (
-        <div className="absolute top-0 right-0 px-3 py-1 bg-zinc-700 text-zinc-300 text-xs rounded-bl-lg rounded-tr-lg">
+        <div className="absolute top-0 right-0 px-3 py-1 bg-zinc-700 text-zinc-300 text-xs rounded-bl-lg rounded-tr-lg z-10">
           {language}
         </div>
       )}
-      <pre className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 overflow-x-auto">
-        <code className="text-sm text-zinc-300 font-mono whitespace-pre">
-          {code}
-        </code>
-      </pre>
+      <Highlight theme={themes.nightOwl} code={code.trim()} language={lang}>
+        {({ className, style, tokens, getLineProps, getTokenProps }) => (
+          <pre
+            className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 overflow-x-auto"
+            style={{ ...style, background: 'rgb(24 24 27)' }}
+          >
+            {tokens.map((line, i) => (
+              <div key={i} {...getLineProps({ line })} className="table-row">
+                <span className="table-cell text-zinc-600 pr-4 select-none text-right text-xs">
+                  {i + 1}
+                </span>
+                <span className="table-cell">
+                  {line.map((token, key) => (
+                    <span key={key} {...getTokenProps({ token })} />
+                  ))}
+                </span>
+              </div>
+            ))}
+          </pre>
+        )}
+      </Highlight>
     </div>
   );
 }
@@ -85,10 +113,64 @@ function ComparisonBlock({
 
 function DiagramBlock({ content }: { content: string }) {
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 overflow-x-auto">
-      <pre className="text-sm text-green-400 font-mono whitespace-pre leading-relaxed">
-        {content}
-      </pre>
+    <div className="relative rounded-2xl overflow-hidden">
+      {/* CRT Monitor Frame */}
+      <div className="absolute inset-0 bg-gradient-to-b from-zinc-700 via-zinc-800 to-zinc-900 rounded-2xl" />
+      <div className="absolute inset-1 bg-gradient-to-b from-zinc-800 to-zinc-950 rounded-xl" />
+
+      {/* Screen bezel */}
+      <div className="relative m-2 rounded-xl overflow-hidden">
+        {/* Screen background with vignette */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background: 'radial-gradient(ellipse at center, #001a00 0%, #000800 70%, #000000 100%)',
+          }}
+        />
+
+        {/* Scanlines overlay */}
+        <div
+          className="absolute inset-0 pointer-events-none opacity-30"
+          style={{
+            backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 0, 0, 0.3) 2px, rgba(0, 0, 0, 0.3) 4px)',
+          }}
+        />
+
+        {/* Screen glow */}
+        <div
+          className="absolute inset-0 pointer-events-none opacity-10"
+          style={{
+            background: 'radial-gradient(ellipse at center, #00ff00 0%, transparent 70%)',
+          }}
+        />
+
+        {/* Content */}
+        <div className="relative p-6 overflow-x-auto">
+          <pre
+            className="text-sm font-mono whitespace-pre leading-relaxed"
+            style={{
+              color: '#00ff41',
+              textShadow: '0 0 5px #00ff41, 0 0 10px #00ff41, 0 0 20px #00aa2a',
+              fontFamily: '"Courier New", "Lucida Console", Monaco, monospace',
+            }}
+          >
+            {content}
+          </pre>
+        </div>
+
+        {/* Screen reflection */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.03) 0%, transparent 50%, transparent 100%)',
+          }}
+        />
+      </div>
+
+      {/* Monitor stand indicator / power LED */}
+      <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 flex items-center gap-2">
+        <div className="w-2 h-2 rounded-full bg-green-500 shadow-lg shadow-green-500/50" />
+      </div>
     </div>
   );
 }
