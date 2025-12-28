@@ -22,6 +22,35 @@ export interface Section {
 
 export const presentationData: Section[] = [
   {
+    id: "giris",
+    title: "Giriş",
+    icon: "🎯",
+    slides: [
+      {
+        id: "giris-hosgeldiniz",
+        title: "CI/CD & DevOps",
+        duration: "3 dk",
+        content: [
+          {
+            type: "list",
+            content: "Bugün Neler Öğreneceğiz?",
+            items: [
+              "GitHub Actions - CI/CD pipeline oluşturma",
+              "Vercel & Netlify - Modern deployment platformları",
+              "Docker - Container teknolojisi",
+              "Kubernetes - Container orchestration",
+              "Deployment Strategies - Sıfır downtime deployment",
+            ],
+          },
+          {
+            type: "highlight",
+            content: "CI/CD sadece teknoloji değil, bir kültür değişimi.",
+          },
+        ],
+      },
+    ],
+  },
+  {
     id: "github-actions",
     title: "GitHub Actions",
     icon: "⚙️",
