@@ -9,11 +9,7 @@
 
 ### Açılış
 
-Merhaba arkadaşlar, bugün sizlerle CI/CD ve DevOps dünyasının temel taşlarını konuşacağız. Ama önce şunu sorayım: Kaç kişi daha önce "benim bilgisayarımda çalışıyordu" cümlesini duydu veya söyledi?
-
-*[Kısa bir tebessüm için bekle]*
-
-Bu cümle, yazılım geliştirme dünyasının en eski ve en can sıkıcı problemlerinden birini özetliyor. İşte bugün konuşacağımız teknolojilerin hepsi, aslında bu problemi çözmek için var.
+Merhaba arkadaşlar, bugün sizlerle CI/CD ve DevOps dünyasının temel taşlarını konuşacağız.
 
 ### Neden CI/CD Önemli?
 
@@ -21,7 +17,7 @@ Bu cümle, yazılım geliştirme dünyasının en eski ve en can sıkıcı probl
 
 Cevap basit: Otomasyon ve güvenilir süreçler.
 
-CI/CD sadece bir teknoloji değil, bir kültür değişimi. Manuel test, manuel deployment ve "deployment günü" korkusu artık geçmişte kaldı. Doğru araçlar ve süreçlerle, her gün huzur içinde production'a kod gönderebiliriz.
+CI/CD sadece bir teknoloji değil, bir kültür değişimi. Manuel test ve manuel deployment artık geçmişte kaldı diyebiliriz.
 
 ### Bugün Neler Öğreneceğiz?
 
@@ -33,8 +29,6 @@ Bugünkü sunumda 5 ana konuyu ele alacağız:
 4. **Kubernetes** - Container'ları production'da nasıl yöneteceğiz
 5. **Deployment Stratejileri** - Sıfır downtime ile nasıl deployment yapacağız
 
-Her konuyu önce "neden" sorusunu cevaplayarak başlayacağız, sonra "nasıl" kısmına geçeceğiz. Kodları gösterirken de pratik örnekler üzerinden gideceğiz.
-
 Hazırsanız, GitHub Actions ile başlayalım.
 
 ---
@@ -43,35 +37,35 @@ Hazırsanız, GitHub Actions ile başlayalım.
 
 ### 1.1 GitHub Actions Nedir?
 
-Şimdi ilk konumuza geçelim: GitHub Actions. Muhtemelen çoğunuz adını duymuşsunuzdur ama tam olarak ne işe yaradığını, neden bu kadar popüler olduğunu birlikte inceleyelim.
+Muhtemelen çoğunuz adını duymuşsunuzdur
 
 Şöyle bir senaryo hayal edin: Yeni bir özellik geliştirdiniz, testlerinizi kendi bilgisayarınızda çalıştırdınız, her şey yeşil, kod çalışıyor. Pull request açtınız, takım arkadaşınız onayladı, main branch'e merge ettiniz. Ertesi gün geldiniz, production patlamış. Neden? Çünkü takım arkadaşınızın bir hafta önce yaptığı değişiklikle sizin kodunuz çakışmış. Ya da siz Node 20 kullanıyorsunuz ama production'da Node 18 var, ufak bir syntax farkı her şeyi bozmuş.
 
-İşte GitHub Actions tam olarak bu tür sorunları çözmek için var. Her push'ta, her pull request'te otomatik olarak testlerinizi çalıştırıyor, build alıyor, hatta isterseniz direkt production'a deploy ediyor. Siz daha merge tuşuna basmadan, kodunuzun tüm ortamlarda çalışıp çalışmadığını görüyorsunuz.
+İşte GitHub Actions tam olarak bu tür sorunları çözmek için var. Her push'ta, her pull request'te otomatik olarak testlerinizi çalıştırıyor, build alıyor, hatta isterseniz direkt production'a deploy ediyor. Siz daha merge etmeden, kodunuzun tüm ortamlarda çalışıp çalışmadığını görüyorsunuz.
 
-En büyük avantajı şu: GitHub ile birebir entegre. Eskiden CI/CD için ayrı bir Jenkins server kurardık, CircleCI hesabı açardık, webhook'lar tanımlardık, bir sürü konfigürasyon yapardık. Şimdi her şey repo içinde, birkaç YAML dosyasıyla tanımlanıyor. Reponuz neredeyse, CI/CD'niz de orada.
+En büyük avantajı şu: GitHub ile birebir entegre. Birkaç YAML dosyasıyla tanımlanıyor. Reponuz neredeyse, CI/CD'niz de orada.
 
 ### 1.2 Temel Mimari
 
-*[Mimari diyagramını göster]*
+_[Mimari diyagramını göster]_
 
-GitHub Actions mimarisini anlamak için 5 temel kavramı bilmemiz gerekiyor. Bunları bir kez anladığınızda, herhangi bir workflow dosyasını rahatlıkla okuyabilir ve yazabilirsiniz.
+GitHub Actions mimarisini anlamak için 5 temel kavramı bilmemiz gerekiyor.
 
-Birincisi Event. Event, workflow'u tetikleyen olay demek. Birileri push yaptığında tetiklenebilir, pull request açıldığında tetiklenebilir, hatta cron job gibi her gece saat 3'te bile tetiklenebilir. "Hangi durumda bu otomasyon çalışsın?" sorusunun cevabı event'tir.
+Birincisi Event. Event, workflow'u tetikleyen olay demek. Birileri push yaptığında tetiklenebilir, pull request açıldığında tetiklenebilir, "Hangi durumda bu otomasyon çalışsın?" sorusunun cevabı event'tir.
 
-İkincisi Workflow. Workflow, `.github/workflows` klasöründeki YAML dosyalarıdır. Tüm otomasyonunuzu burada tanımlıyorsunuz. Bir repo'da birden fazla workflow olabilir - biri test için, biri deployment için, biri güvenlik taraması için gibi.
+İkincisi Workflow. Tüm otomasyonunuzu burada tanımlıyorsunuz. Bir repo'da birden fazla workflow olabilir - biri test için, biri deployment için gibi.
 
 Üçüncüsü Job. Job, bir workflow içindeki iş parçacıklarıdır. Mesela bir workflow'da "test" job'ı var, "build" job'ı var, "deploy" job'ı var. Bunlar paralel çalışabilir ya da birbirlerini bekleyebilir. "Testler geçmedikçe build yapma" gibi bağımlılıklar tanımlayabilirsiniz.
 
-Dördüncüsü Step. Step, job içindeki adımlardır. Ya hazır bir action kullanırsınız - mesela `actions/checkout` repo'yu klonlar - ya da direkt shell komutu çalıştırırsınız, `npm test` gibi.
+Dördüncüsü Step. Step, job içindeki adımlardır.
 
-Beşincisi Runner. Runner, işlerin çalıştığı makinedir. GitHub size Ubuntu, Windows, macOS seçenekleri sunuyor. Hatta isterseniz kendi sunucunuzu self-hosted runner olarak tanımlayabilirsiniz. Özel hardware gereksinimleriniz varsa ya da private network'e erişim gerekiyorsa bu çok işe yarıyor.
+Beşincisi Runner. Runner, işlerin çalıştığı makinedir. GitHub size Ubuntu, Windows, macOS seçenekleri sunuyor. Hatta isterseniz kendi sunucunuzu self-hosted runner olarak tanımlayabilirsiniz.
 
 ### 1.3 Örnek Workflow
 
-*[Workflow kodunu göster]*
+_[Workflow kodunu göster]_
 
-Şimdi gerçek bir workflow örneğine bakalım. Bu dosyayı satır satır okuyacağız ki ne yaptığını tam anlayalım.
+Şimdi gerçek bir workflow örneğine bakıp ne yaptığını tam anlayalım.
 
 İlk kısımda trigger'ları görüyoruz:
 
@@ -83,7 +77,7 @@ on:
     branches: [main]
 ```
 
-Bu ne diyor? Main veya develop branch'ine push yapıldığında çalış. Ayrıca main'e açılan pull request'lerde de çalış. Yani hem merge sonrası hem de merge öncesi kontrol ediyoruz. PR aşamasında yakalarsak, hatalı kodu hiç main'e almamış oluruz.
+Bu ne diyor? Main veya develop branch'ine push yapıldığında çalış. Ayrıca main'e açılan pull request'lerde de çalış. Yani hem merge sonrası hem de merge öncesi kontrol ediyoruz.
 
 Sonra job tanımına bakıyoruz:
 
@@ -96,20 +90,20 @@ jobs:
         node: [18, 20, 22]
 ```
 
-Burada çok güçlü bir özellik var: matrix strategy. Bu ne demek? Aynı testi 3 farklı Node versiyonunda paralel olarak çalıştır. Tek bir job tanımıyla aslında 3 ayrı iş çalıştırıyorsunuz. Node 18'de çalışıyor ama Node 22'de hata veriyor gibi durumları anında yakalıyorsunuz. Özellikle açık kaynak projelerde veya farklı müşteri ortamlarını destekliyorsanız bu hayat kurtarıcı.
+Burada çok güçlü bir özellik var: matrix strategy. Bu ne demek? Aynı testi 3 farklı Node versiyonunda paralel olarak çalıştır. Tek bir job tanımıyla aslında 3 ayrı iş çalıştırıyorsunuz. Node 18'de çalışıyor ama Node 22'de hata veriyor gibi durumları anında yakalıyorsunuz.
 
 Bir de job'lar arası bağımlılığa bakalım:
 
 ```yaml
-  build:
-    needs: test
+build:
+  needs: test
 ```
 
-Build job'ı "needs: test" diyor. Yani testler geçmedikçe build başlamıyor. Bu çok önemli bir prensip: Hatalı kodu asla bir sonraki aşamaya taşımayın. Test kırmızıysa, build'e gerek yok, deploy'a hiç gerek yok.
+Build job'ı "needs: test" diyor. Yani testler geçmedikçe build başlamıyor.
 
 ### 1.4 Secrets Yönetimi
 
-*[Secrets kodunu göster]*
+_[Secrets kodunu göster]_
 
 Şimdi kritik bir konuya değinelim: Hassas bilgilerin yönetimi. Bu konu özellikle junior arkadaşların sıkça hata yaptığı bir alan.
 
@@ -119,19 +113,19 @@ GitHub Secrets tam olarak bunun için var. Üç farklı seviyede secret tanımla
 
 Repository Secrets: Sadece o repo'ya özel. Mesela projenizin Vercel deploy token'ı.
 
-Organization Secrets: Tüm organizasyondaki repolarda kullanılabilir. Mesela şirketin npm private registry token'ı. Bir kez tanımlarsınız, 50 repo'da kullanırsınız.
+Organization Secrets: Tüm organizasyondaki repolarda kullanılabilir. Bir kez tanımlarsınız, 50 repo'da kullanırsınız.
 
-Environment Secrets: Bu en gelişmiş olanı. Production, staging, development gibi ortamlar tanımlıyorsunuz. Her ortamın kendi secret'ları var. Production database şifresi staging'den farklı oluyor doğal olarak.
-
-Environment'ların bir güzel özelliği daha var: Protection Rules. Mesela diyorsunuz ki "production environment'ına deploy için 2 kişinin onayı gerekli" ya da "sadece main branch'ten deploy yapılabilir". Bu tür kurallar, yanlışlıkla production'a hatalı kod göndermenizi engelliyor.
+Environment Secrets: Bu en gelişmiş olanı. Production, staging, development gibi ortamlar tanımlıyorsunuz. Her ortamın kendi secret'ları var.
 
 ### 1.5 Best Practices
 
-*[Best practices listesini göster]*
+_[Best practices listesini göster]_
 
-GitHub Actions kullanırken yıllar içinde öğrendiğimiz bazı best practice'ler var. Bunları baştan bilmek sizi çok fazla baş ağrısından kurtarır.
+GitHub Actions kullanırken yıllar içinde öğrendiğimiz bazı best practice'ler var.
 
-Önce performans tarafına bakalım. Cache kullanın. Her workflow çalıştığında npm paketlerini sıfırdan indirmek hem yavaş hem de gereksiz. GitHub'ın cache action'ı ile node_modules'ı cache'leyebilirsiniz, workflow süreniz yarıya düşer. Matrix builds ile paralel çalıştırın demiştik, 3 test seri çalışacağına paralel çalışsın, 3 kat hızlansın. Bir de timeout belirlemeyi unutmayın. Bazen bir test sonsuz döngüye girer ya da network beklerken takılır. Timeout koymazsanız dakikalarınızı, hatta saatlerinizi yer. 10 dakikalık bir timeout çoğu iş için yeterlidir.
+Önce performans tarafına bakalım. Her workflow çalıştığında npm paketlerini sıfırdan indirmek hem yavaş hem de gereksiz. GitHub'ın cache action'ı ile node_modules'ı cache'leyebilirsiniz, workflow süreniz yarıya düşer.
+
+Matrix builds ile paralel çalıştırabildiğimizi görmüştük, 3 test seri çalışacağına paralel çalışsın, 3 kat hızlansın. Bazen bir test sonsuz döngüye girer ya da network beklerken takılır. Timeout koymazsanız dakikalarınızı, hatta saatlerinizi yiyebilir.
 
 Güvenlik tarafında ise şunu bilin: Action versiyonlarını SHA ile pinleyin. Ne demek bu? `actions/checkout@v4` yazmak yerine `actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11` gibi tam commit hash'i yazın. Neden? Çünkü v4 etiketi değiştirilebilir. Birisi o action'ın sahibiyse, v4'ün gösterdiği kodu değiştirebilir. Ama commit hash değiştirilemez, o hash her zaman aynı kodu gösterir. Paranoyakça gelebilir ama supply chain attack'lar gerçek bir tehdit.
 
@@ -143,31 +137,37 @@ Bir de GITHUB_TOKEN konusu var. Her workflow otomatik olarak bir GITHUB_TOKEN al
 
 ### 2.1 Neden Bu Platformlar?
 
-Pekala, GitHub Actions ile CI/CD pipeline'larımızı kurabiliyoruz artık. Testler çalışıyor, build alınıyor. Ama bir dakika, bu build'i nereye deploy edeceğiz?
+Pekala, GitHub Actions ile CI/CD pipeline'larımızı kurabiliyoruz artık. Testler çalışıyor, build alınıyor. Ama bu build'i nereye deploy edeceğiz onu göreceğiz.
 
-Geleneksel yöntemi düşünelim: Bir VPS kiralarsınız, sunucuya SSH ile bağlanırsınız, nginx kurarsınız, reverse proxy ayarlarsınız, SSL sertifikası için Let's Encrypt kurarsınız, cron job'lar yazarsınız, deployment script'leri hazırlarsınız... Bu süreç saatler, hatta günler alır. Üstelik her deployment'ta aynı şeyleri tekrarlamanız gerekir.
+Geleneksel yöntemi düşünelim: Bir VPS kiralarsınız, sunucuya SSH ile bağlanırsınız, reverse proxy ayarlarsınız, SSL sertifikası kurarsınız gibi gibi Bu süreç saatler, hatta günler alır. Üstelik her deployment'ta aynı şeyleri tekrarlamanız gerekir.
 
-Şimdi modern yönteme bakalım: Git push yaparsınız, 30 saniye sonra siteniz canlı. SSL hazır, CDN hazır, her şey otomatik. Kulağa hayal gibi geliyor değil mi? Ama gerçek.
+Şimdi modern yönteme bakalım: Git push yaparsınız, 30 saniye sonra siteniz canlı. SSL hazır, CDN hazır.
 
-İşte Vercel ve Netlify bu ikinci yöntemi sunan platformlar. İkisi de "Platform as a Service" kategorisinde ve özellikle frontend uygulamalar için optimize edilmiş. JAMstack - yani JavaScript, API, Markup - mimarisine ve serverless yaklaşıma odaklanıyorlar. Bugün bu iki platformu karşılaştıracağız ki sizin projeniz için hangisinin daha uygun olduğuna karar verebilesiniz.
+İşte Vercel ve Netlify bu ikinci yöntemi sunan platformlar. İkisi de özellikle frontend uygulamalar için optimize edilmiş. JAMstack - yani JavaScript, API ve serverless yaklaşıma odaklanıyorlar.
+
+Bugün bu iki platformu karşılaştıracağız ki sizin projeniz için hangisinin daha uygun olduğuna karar verebilesiniz.
 
 ### 2.2 Platform Karşılaştırması
 
-*[Karşılaştırma tablosunu göster]*
+_[Karşılaştırma tablosunu göster]_
 
 Her iki platformun da güçlü yanları var, birlikte bakalım.
 
-Vercel'den başlayalım. Vercel'in kurucusu Guillermo Rauch aynı zamanda Next.js'in de yaratıcısı. Bu ne demek? Vercel, Next.js için biçilmiş kaftan. React Server Components, Incremental Static Regeneration, Edge Functions - Next.js'in tüm gelişmiş özellikleri Vercel'de en iyi şekilde çalışıyor. Hatta bazı özellikler Vercel'de çalışıp başka platformlarda düzgün çalışmıyor bile. Next.js kullanıyorsanız, Vercel doğal seçim.
+Vercel'den başlayalım. Vercel'in kurucusu aynı zamanda Next.js'in de yaratıcısı. Bu ne demek? Vercel, Next.js için biçilmiş kaftan.
 
-Netlify ise JAMstack hareketinin öncüsü. Bu hareketi başlatan, popülerleştiren platform diyebiliriz. Netlify daha framework-agnostic bir yaklaşım sergiliyor. Next.js kullanın, Vue kullanın, Svelte kullanın, Angular kullanın, hatta sadece statik HTML kullanın - hepsinde iyi çalışır. Netlify'ın ek olarak sunduğu built-in form handling özelliği var. Sayfanıza bir form koyuyorsunuz, backend yazmadan form verilerini toplayabiliyorsunuz. Küçük projeler için çok pratik. Identity management özelliği de var - kullanıcı giriş/kayıt sistemi hazır geliyor.
+Next.js'in tüm gelişmiş özellikleri Vercel'de en iyi şekilde çalışıyor. Hatta bazı özellikler Vercel'de çalışıp başka platformlarda düzgün çalışmıyor bile. Next.js kullanıyorsanız, Vercel doğal seçim.
 
-Her iki platformda da ortak özellikler mevcut: Git push yaptığınızda otomatik deployment, her pull request için ayrı bir preview URL, global CDN üzerinden dağıtım, serverless function desteği. Temel özellikler açısından birbirlerine çok yakınlar.
+Netlify ise JAMstack hareketinin öncüsü. Netlify daha framework-agnostic bir yaklaşım sergiliyor. Next.js, vue, angular gibi tekknolojilerin hepsinde iyi çalışır. Netlify'ın ek olarak sunduğu built-in form handling özelliği var. Sayfanıza bir form koyuyorsunuz, backend yazmadan form verilerini toplayabiliyorsunuz.
+
+Her iki platformda da ortak özellikler mevcut: Git push yaptığınızda otomatik deployment, her pull request için ayrı bir preview URL, global CDN üzerinden dağıtım, serverless function desteği sunuyolar.
+
+Temel özellikler açısından birbirlerine çok yakınlar.
 
 ### 2.3 Konfigürasyon
 
-*[Config dosyalarını göster]*
+_[Config dosyalarını göster]_
 
-Konfigürasyon yaklaşımlarına bakalım çünkü günlük kullanımda bu dosyalarla çok muhatap olacaksınız.
+Konfigürasyon yaklaşımlarına bakalım
 
 Vercel JSON formatı kullanıyor. Örneğin:
 
@@ -194,33 +194,36 @@ Netlify ise TOML formatını tercih ediyor:
   environment = { API_URL = "https://api.staging.com" }
 ```
 
-Netlify'ın burada çok güzel bir özelliği var: Context bazlı konfigürasyon. Production deployment için bir API URL'i, preview deployment'lar için farklı bir API URL'i tanımlayabiliyorsunuz. Dosya içinde her şey açık ve net. Vercel'de de aynı şeyi yapabilirsiniz ama dashboard üzerinden, dosya bazlı değil.
+Netlify'ın burada çok güzel bir özelliği var: Context bazlı konfigürasyon. Production deployment için bir API URL'i, preview deployment'lar için farklı bir API URL'i tanımlayabiliyorsunuz. Vercel'de de aynı şeyi yapabilirsiniz ama dashboard üzerinden, dosya bazlı değil.
 
 ### 2.4 Serverless Functions
 
-*[Function kodlarını göster]*
+_[Function kodlarını göster]_
 
 Her iki platformda da serverless function yazabiliyorsunuz. Bu, basit backend ihtiyaçlarınızı karşılayabileceğiniz anlamına geliyor. Tam teşekküllü bir backend server'a ihtiyacınız olmadan API endpoint'leri oluşturabilirsiniz.
 
-Vercel'de iki tür function var: Serverless Functions ve Edge Functions. Serverless Functions klasik Lambda tarzı, Node.js runtime'da çalışıyor, bir data center'da. Edge Functions ise kullanıcıya en yakın lokasyonda çalışıyor. Bir kullanıcı İstanbul'daysa, function İstanbul'daki edge node'da çalışır. Bu da çok düşük latency demek. Özellikle authentication kontrolü, A/B testing, geolocation bazlı yönlendirme gibi işler için mükemmel.
+Vercel'de iki tür function var:
 
-Netlify'da da benzer şekilde Functions ve Edge Functions var. Netlify'ın ek bir avantajı: Background Functions. Normal function'lar 10-30 saniye içinde cevap vermek zorunda. Ama bazen uzun süren işler var - video processing, büyük data export, toplu email gönderimi gibi. Background Functions 15 dakikaya kadar çalışabiliyor. İşi başlatıyorsunuz, arka planda devam ediyor, kullanıcı beklemek zorunda kalmıyor.
+Serverless Functions ve Edge Functions. Serverless Functions klasik Lambda tarzı, Node.js runtime'da çalışıyor.
+
+Edge Functions ise kullanıcıya en yakın lokasyonda çalışıyor. Bir kullanıcı İstanbul'daysa, function İstanbul'daki edge node'da çalışır. Bu da çok düşük latency demek.
+
+Netlify’da Functions ve Edge Functions’a ek olarak Background Functions da var.
+Uzun süren işler için ideal: 15 dakikaya kadar arka planda çalışır, kullanıcıyı bekletmiyor.
 
 ### 2.5 Hangisini Seçmeli?
 
-*[Karar ağacını göster]*
+_[Karar ağacını göster]_
 
 Peki hangisini seçmeliyiz? Size basit bir karar ağacı sunayım.
 
-Eğer Next.js kullanıyorsanız, Vercel seçin. Bu konuda tartışma yok. Next.js Vercel için, Vercel Next.js için tasarlandı. En iyi deneyimi orada alırsınız.
+Eğer Next.js kullanıyorsanız, Vercel seçin. Bu konuda tartışmaya gerek yok.
 
-Eğer farklı bir framework kullanıyorsanız - Vue, Svelte, Nuxt, Gatsby, Astro ne olursa olsun - Netlify genellikle daha iyi uyumluluk sunuyor. Framework agnostic yaklaşımı sayesinde her şeyle iyi çalışıyor.
+Eğer farklı bir framework kullanıyorsanız - Vue, angular ne olursa olsun - Netlify genellikle daha iyi uyumluluk sunuyor.
 
-Eğer sitenizde form'lar var ve backend yazmak istemiyorsanız, Netlify'ın built-in form handling özelliği çok işinize yarayacak. Contact form, feedback form, newsletter signup - hepsini backend olmadan çözebilirsiniz.
+Eğer sitenizde form'lar var ve backend yazmak istemiyorsanız, Netlify'ın built-in form handling özelliği çok işinize yarayacaktır eminim ki.
 
-Eğer edge computing sizin için kritikse, düşük latency her şeyin önündeyse, Vercel'in edge network'ü şu an daha gelişmiş durumda.
-
-Sonuç olarak şunu söyleyeyim: İkisi de mükemmel platformlar. Yanlış seçim yok aslında. İkisini de denemek de bir seçenek - ikisinin de ücretsiz tier'ı oldukça cömert. Küçük bir proje alın, ikisinde de deploy edin, hangisinin developer experience'ını daha çok sevdiğinize kendiniz karar verin.
+Sonuç olarak şunu söyleyeyim: İkisi de mükemmel platformlar. Yanlış seçim yok aslında. Hangisinin developer experience'ını daha çok sevdiğinize kendiniz karar verebilirsiniz.
 
 ---
 
@@ -228,43 +231,39 @@ Sonuç olarak şunu söyleyeyim: İkisi de mükemmel platformlar. Yanlış seçi
 
 ### 3.1 Docker Neden Gerekli?
 
-Şimdi bugünkü sunumun belki de en temel konusuna geliyoruz: Docker. Eğer modern yazılım geliştirme dünyasında çalışıyorsanız, Docker bilmek artık bir tercih değil, zorunluluk haline geldi.
+Şimdi bugünkü sunumun belki de en temel konusuna geliyoruz: Docker. Docker bilmek artık bir tercih değil, zorunluluk haline geldi.
 
-Şöyle bir senaryo düşünelim: 5 kişilik bir ekipsiniz. Projeniz Node.js 18 gerektiriyor. Ama takım arkadaşınızın bilgisayarında Node 16 var, bir başkasında Node 20 var. Siz macOS kullanıyorsunuz, frontend developer Windows'ta, DevOps arkadaşınız Linux'ta. Database olarak PostgreSQL 15 kurdunuz, ama QA ekibinde PostgreSQL 13 var. Ayrıca siz Redis 7 kullanıyorsunuz, başka birinin bilgisayarında Redis kurulu bile değil.
+Şöyle bir senaryo düşünelim: 5 kişilik bir ekipsiniz. Projeniz Node.js 18 gerektiriyor. Ama takım arkadaşınızın bilgisayarında Node 16 var, bir başkasında Node 20 var. Siz macOS kullanıyorsunuz.
 
-Bu kadar değişkenlik varken ne oluyor? Bir gün birileri gelip "benim bilgisayarımda çalışıyordu" diyor. Ve haklı olarak diyor - gerçekten onun bilgisayarında çalışıyordu. Ama farklı bir ortamda çalışmıyor işte.
-
-Docker bu problemi kökten çözüyor. Uygulamanızı, tüm bağımlılıklarıyla birlikte - Node versiyonu, sistem kütüphaneleri, environment variable'ları, her şeyiyle - tek bir paket haline getiriyorsunuz. Bu paketi hangi makinede çalıştırırsanız çalıştırın, aynı sonucu alıyorsunuz. Geliştirici bilgisayarı, test sunucusu, production sunucusu - hepsi aynı ortamı görüyor.
+Docker bu problemi kökten çözüyor. Uygulamanızı, tüm bağımlılıklarıyla birlikte - Node versiyonu, sistem kütüphaneleri, environment variable'ları, her şeyiyle - tek bir paket haline getiriyorsunuz. Bu paketi hangi makinede çalıştırırsanız çalıştırın, aynı sonucu alıyorsunuz.
 
 ### 3.2 Container vs VM
 
-*[Karşılaştırma diyagramını göster]*
-
-Şimdi akla gelebilecek bir soru: "Peki virtual machine de aynı şeyi yapmıyor mu? Yıllardır VM kullanıyoruz, izole ortamlar oluşturuyoruz." Haklı bir soru ama container'lar ve VM'ler arasında çok büyük farklar var.
+_[Karşılaştırma diyagramını göster]_
 
 Virtual Machine'de neler oluyor? Her VM için ayrı bir işletim sistemi kuruyorsunuz. 3 tane VM çalıştıracaksanız, 3 ayrı Ubuntu kurulumu demek bu. Her birinin kernel'ı var, sistem kütüphaneleri var, init process'i var. Bu da ne demek? Her VM gigabyte'larca disk alanı kaplıyor. Bir VM'i açmak dakikalar alıyor çünkü tam bir işletim sistemi boot ediliyor. Ve bir sunucuya en fazla 5-10 VM sığdırabilirsiniz.
 
-Container'larda durum çok farklı. Container'lar host işletim sisteminin kernel'ını paylaşıyor. Ayrı bir OS yok, sadece uygulamanız ve onun bağımlılıkları izole ediliyor. Sonuç olarak bir container 50-100 megabyte'lık bir alan kaplıyor. Bir container saniyeler içinde ayağa kalkıyor. Ve aynı sunucuya yüzlerce container sığdırabilirsiniz.
+Container'larda durum çok farklı. Container'lar host işletim sisteminin kernel'ını paylaşıyor. Ayrı bir işletim sistemi yok, sadece uygulamanız ve onun bağımlılıkları izole ediliyor.
 
 Pratik bir örnek vereyim: Tipik bir Ubuntu VM 2-3 GB disk alanı kaplar, açılması 30-60 saniye sürer. Tipik bir Node.js container'ı 100-200 MB disk alanı kaplar, açılması 2-3 saniye sürer. Aradaki fark devasa.
 
 ### 3.3 Temel Kavramlar
 
-*[Kavramlar diyagramını göster]*
+_[Kavramlar diyagramını göster]_
 
-Docker dünyasına girmeden önce 4 temel kavramı anlamamız gerekiyor. Bu kavramları bir kez oturttunuz mu, geri kalan her şey yerine oturur.
+önce 4 temel kavramı anlamamız gerekiyor.
 
 Birincisi Image. Image, uygulamanızın read-only şablonudur. Bir tarif gibi düşünün. Dockerfile adlı bir dosyada tarifi yazıyorsunuz - hangi base image kullanılacak, hangi dosyalar kopyalanacak, hangi komutlar çalıştırılacak. Bu tariften çıkan ürün image'dır.
 
 İkincisi Container. Container, image'ın çalışan halidir. Image'ı tarif demiştik, container da o tariften yapılmış yemek. Bir image'dan istediğiniz kadar container çalıştırabilirsiniz. 10 kullanıcı aynı anda sistemi kullanacaksa, aynı image'dan 10 container çalıştırırsınız.
 
-Üçüncüsü Registry. Registry, image'ların depolandığı ve paylaşıldığı yerdir. En popüleri Docker Hub - açık kaynak image'lar burada. node, postgres, nginx gibi resmi image'lar Docker Hub'da. Şirketler genellikle kendi private registry'lerini kullanır - AWS ECR, Google GCR, GitHub Container Registry gibi.
+Üçüncüsü Registry. Registry, image'ların depolandığı ve paylaşıldığı yerdir.
 
-Dördüncüsü Volume. Container'lar varsayılan olarak ephemeral'dır, yani geçicidir. Container'ı sildiğinizde içindeki tüm veriler gider. Ama database verilerinin kalıcı olmasını istiyorsunuz değil mi? İşte volume'lar bunun için. Container silinse bile volume'daki veriler kalır.
+Dördüncüsü Volume. Container'lar varsayılan olarak geçicidir. Container'ı sildiğinizde içindeki tüm veriler gider.Container silinse bile volume'daki veriler kalır.
 
 ### 3.4 Dockerfile Yazımı
 
-*[Dockerfile kodunu göster]*
+_[Dockerfile kodunu göster]_
 
 Şimdi pratik kısma geçelim. İyi bir Dockerfile nasıl yazılır? Burada çok önemli bir teknik var: Multi-stage build.
 
@@ -291,17 +290,17 @@ Burada ne oluyor? Üç ayrı aşama var ve her birinin farklı bir görevi var.
 
 İkinci aşamada build yapıyoruz. Kaynak kodları alıyoruz, derleyicileri çalıştırıyoruz, production için optimize edilmiş çıktı üretiyoruz.
 
-Üçüncü ve son aşamada sadece production'da çalışması gereken dosyaları alıyoruz. Kaynak kodlar yok, devDependency'ler yok, build araçları yok. Sadece çalıştırılabilir kod var.
+Üçüncü ve son aşamada sadece production'da çalışması gereken dosyaları alıyoruz. Sadece çalıştırılabilir kod var.
 
-Sonuç ne oluyor? Normal bir build yapsaydınız 1 GB civarı bir image olacaktı. Multi-stage build ile 100-150 MB'a düşürüyorsunuz. Bu ne demek? Daha hızlı deploy demek - image'ı çekmek çok daha kısa sürüyor. Daha güvenli demek - saldırganın erişebileceği gereksiz araçlar yok. Daha az depolama alanı demek - registry maliyetleriniz düşüyor.
+Sonuç ne oluyor? Normal bir build yapsaydınız 1 GB civarı bir image olacaktı. Multi-stage build ile 100-150 MB'a kadar düşürüyorsunuz. Bu ne demek? Daha hızlı deploy demek - image'ı çekmek çok daha kısa sürüyor.
 
 ### 3.5 Docker Compose
 
-*[Docker Compose kodunu göster]*
+_[Docker Compose kodunu göster]_
 
-Gerçek dünyada bir uygulama tek başına çalışmaz. Web uygulamanız var, arkasında PostgreSQL database var, performans için Redis cache var, arkaplanda job'lar çalıştırmak için RabbitMQ var. Bunların hepsini ayrı ayrı docker run komutuyla çalıştırmak hem zahmetli hem de hata yapmaya açık.
+bir uygulama tek başına çalışmaz. Web uygulamanız var, arkasında PostgreSQL database var, performans için Redis cache var. Bunların hepsini ayrı ayrı docker run komutuyla çalıştırmak hem zahmetli hem de hata yapmaya açık.
 
-Docker Compose tam olarak bu problem için var. Tüm servislerinizi tek bir YAML dosyasında tanımlıyorsunuz ve tek komutla hepsini ayağa kaldırıyorsunuz.
+Docker Compose tam olarak bu problemi çözüyo. Tüm servislerinizi tek bir YAML dosyasında tanımlıyorsunuz ve tek komutla hepsini ayağa kaldırıyorsunuz.
 
 ```yaml
 services:
@@ -317,27 +316,11 @@ services:
       test: ["CMD-SHELL", "pg_isready"]
 ```
 
-Burada iki önemli kavram var. Birincisi depends_on - bu servis şu servise bağımlı demek. Ama sadece "bağımlı" demek yetmiyor çünkü bir servisin container'ı başladı diye hazır olduğu anlamına gelmiyor. PostgreSQL container'ı başladı ama henüz connection kabul etmiyorsa ne olacak?
+<!-- Burada iki önemli kavram var. Birincisi depends_on - bu servis şu servise bağımlı demek. Ama sadece "bağımlı" demek yetmiyor çünkü bir servisin container'ı başladı diye hazır olduğu anlamına gelmiyor. PostgreSQL container'ı başladı ama henüz connection kabul etmiyorsa ne olacak?
 
-İşte bu yüzden ikinci kavram var: healthcheck. Database'e "hazır mısın?" diye soruyoruz. pg_isready komutu PostgreSQL'in bağlantı kabul etmeye hazır olup olmadığını kontrol ediyor. condition: service_healthy dediğimizde, uygulama ancak database sağlıklı duruma geçtikten sonra başlıyor.
+İşte bu yüzden ikinci kavram var: healthcheck. Database'e "hazır mısın?" diye soruyoruz. pg_isready komutu PostgreSQL'in bağlantı kabul etmeye hazır olup olmadığını kontrol ediyor. condition: service_healthy dediğimizde, uygulama ancak database sağlıklı duruma geçtikten sonra başlıyor. -->
 
-Geliştirme ortamınızı tek komutla ayağa kaldırıyorsunuz: docker compose up -d. Arka planda çalışıyor, terminali meşgul etmiyor. İşiniz bittiğinde docker compose down ile her şeyi kapatıyorsunuz.
-
-### 3.6 Güvenlik
-
-*[Güvenlik best practices listesini göster]*
-
-Docker güvenliği sık sık göz ardı edilen ama kritik öneme sahip bir konu. Birkaç temel kuralı bilmek sizi çok fazla dertten kurtarır.
-
-Birincisi: Container'ları root olarak çalıştırmayın. Varsayılan olarak container'lar root kullanıcısıyla çalışır. Bu çok tehlikeli çünkü bir güvenlik açığı varsa saldırgan root yetkilerine sahip oluyor. Dockerfile'ınızda bir non-root user oluşturun ve USER komutuyla o kullanıcıya geçin.
-
-İkincisi: Resmi base image'lar kullanın. Docker Hub'da node, postgres, nginx gibi "Official Images" etiketli image'lar var. Bunlar düzenli olarak güvenlik taramasından geçiyor ve güncelleniyor. Rastgele birinin yaptığı image'a güvenmeyin - içinde ne olduğunu bilemezsiniz.
-
-Üçüncüsü: Image'larınızı düzenli olarak güvenlik taramasından geçirin. Trivy, Snyk, Clair gibi araçlar image'larınızdaki bilinen güvenlik açıklarını tespit ediyor. Bu taramayı CI/CD pipeline'ınıza ekleyebilirsiniz - her build'de otomatik tarama yapılsın.
-
-Dördüncüsü: Resource limit'ler koyun. Bir container'ın tüm CPU'yu veya tüm memory'yi tüketmesine izin vermeyin. Bir bug veya saldırı sonucu bir container çıldırırsa, diğer container'ları ve host sistemini de etkiler. Memory ve CPU limit'leri koyarak bunu önlüyorsunuz.
-
----
+docker compose up -d. Arka planda çalışıyor, terminali meşgul etmiyor. İşiniz bittiğinde docker compose down ile her şeyi kapatıyorsunuz.
 
 ## BÖLÜM 4: KUBERNETES (8-9 dakika)
 
@@ -355,7 +338,7 @@ Kubernetes nereden çıktı? Google'ın Borg adlı internal sisteminden esinleni
 
 ### 4.2 Mimari
 
-*[Mimari diyagramını göster]*
+_[Mimari diyagramını göster]_
 
 Kubernetes mimarisini anlamak için onu iki ana parçaya ayıralım: Control Plane ve Worker Nodes. Control Plane beyindir, kararları alır. Worker Nodes ise kollardır, işi yapar.
 
@@ -379,7 +362,7 @@ Container Runtime container'ları çalıştıran yazılımdır. Eskiden Docker k
 
 ### 4.3 Temel Objeler
 
-*[Objeler listesini göster]*
+_[Objeler listesini göster]_
 
 Kubernetes'te her şey bir objedir. Bu objeleri YAML dosyalarıyla tanımlarsınız ve kubectl apply komutuyla cluster'a uygularsınız. En sık karşılaşacağınız objelere bakalım.
 
@@ -395,7 +378,7 @@ ConfigMap ve Secret konfigürasyon verilerini tutar. Environment variable'ları,
 
 ### 4.4 Deployment Manifest
 
-*[Deployment YAML'ını göster]*
+_[Deployment YAML'ını göster]_
 
 Şimdi gerçek bir Deployment YAML'ına bakalım. Bu dosya Kubernetes'e ne istediğinizi söylüyor.
 
@@ -438,7 +421,7 @@ Health check'ler pod'un durumunu izlemek için kullanılır. livenessProbe "bu p
 
 ### 4.5 kubectl Komutları
 
-*[Komutlar listesini göster]*
+_[Komutlar listesini göster]_
 
 Kubernetes ile günlük çalışırken en çok kullanacağınız komutlara bakalım. kubectl Kubernetes'in komut satırı aracı.
 
@@ -463,7 +446,7 @@ Ve belki de en önemlisi kubectl rollout undo. Yeni versiyon deploy ettiniz, bir
 
 ### 4.6 Helm
 
-*[Helm kodunu göster]*
+_[Helm kodunu göster]_
 
 Kubernetes manifest dosyaları büyüyünce yönetmek zorlaşıyor. 10 tane mikro servisiniz var, her birinin Deployment'ı, Service'i, ConfigMap'i var. Staging ve production için farklı değerler kullanmanız gerekiyor. Her yerde aynı şeyleri tekrar ediyorsunuz.
 
@@ -498,7 +481,7 @@ Dört ana deployment stratejisi var ve her birinin kendine göre avantajları ve
 
 ### 5.2 Recreate
 
-*[Recreate diyagramını göster]*
+_[Recreate diyagramını göster]_
 
 İlk strateji en basit olanı: Recreate. Ne yapıyor? Mevcut versiyonu tamamen durdur, sonra yeni versiyonu başlat. Tek satırlık konfigürasyon:
 
@@ -517,7 +500,7 @@ Production'da müşteriye dönük sistemler için uygun değil.
 
 ### 5.3 Rolling Update
 
-*[Rolling Update diyagramını göster]*
+_[Rolling Update diyagramını göster]_
 
 İkinci strateji Kubernetes'in varsayılan stratejisi: Rolling Update. Pod'lar teker teker güncelleniyor.
 
@@ -539,7 +522,7 @@ Dezavantajı: Güncelleme sırasında eski ve yeni versiyon aynı anda çalış�
 
 ### 5.4 Blue-Green
 
-*[Blue-Green diyagramını göster]*
+_[Blue-Green diyagramını göster]_
 
 Üçüncü strateji Blue-Green deployment. Burada iki ayrı ortam var: Blue mevcut çalışan versiyon, Green yeni versiyon.
 
@@ -549,7 +532,7 @@ Akış şöyle işliyor: Önce Green ortamını deploy ediyorsunuz ama henüz tr
 # Service selector'ı değiştirerek switch
 selector:
   app: myapp
-  version: green  # blue'dan green'e çevir
+  version: green # blue'dan green'e çevir
 ```
 
 Ve işin güzel tarafı: Problem olursa, aynı switch'i geri çeviriyorsunuz ve anında Blue'ya dönüyorsunuz. Rollback saniyeler içinde oluyor.
@@ -562,7 +545,7 @@ Ne zaman kullanmalı? Kritik production sistemlerinde. Finans uygulamaları, e-t
 
 ### 5.5 Canary
 
-*[Canary diyagramını göster]*
+_[Canary diyagramını göster]_
 
 Dördüncü strateji en düşük riskli olanı: Canary deployment. İsim nereden geliyor? Eskiden madenciler, madene girerken yanlarında kanarya kuşu götürürmüş. Zehirli gaz sızıntısı olursa kanarya önce etkilenir, madenciler uyarılmış olur. Aynı mantık burada da geçerli - küçük bir grup kullanıcı önce yeni versiyonu deneyimliyor.
 
@@ -587,7 +570,7 @@ Netflix, Google, Facebook gibi büyük şirketler Canary kullanıyor. Milyonlarc
 
 ### 5.6 GitOps ve ArgoCD
 
-*[GitOps diyagramını göster]*
+_[GitOps diyagramını göster]_
 
 Son olarak modern deployment dünyasının standardı haline gelen bir yaklaşımdan bahsedelim: GitOps.
 
@@ -647,13 +630,14 @@ Size bu yolculukta başarılar diliyorum.
 
 Evet arkadaşlar, sunumun içerik kısmını tamamladık. Şimdi sorularınızı alabilirim. Herhangi bir konu hakkında - GitHub Actions, Docker, Kubernetes, deployment stratejileri, hatta bugün bahsetmediğimiz ama merak ettiğiniz konular olabilir. Buyurun.
 
-*[5-10 dakika soru-cevap için ayır]*
+_[5-10 dakika soru-cevap için ayır]_
 
 ---
 
 ## EK: HIZLI REFERANS KARTI
 
 ### GitHub Actions - Temel Workflow
+
 ```yaml
 name: CI
 on: [push, pull_request]
@@ -666,6 +650,7 @@ jobs:
 ```
 
 ### Docker - Temel Komutlar
+
 ```bash
 docker build -t app .        # Image oluştur
 docker run -p 3000:3000 app  # Container çalıştır
@@ -673,6 +658,7 @@ docker compose up -d         # Compose stack başlat
 ```
 
 ### Kubernetes - Temel Komutlar
+
 ```bash
 kubectl apply -f manifest.yaml   # Deploy
 kubectl get pods                 # Pod listesi
@@ -680,6 +666,7 @@ kubectl rollout undo deployment  # Rollback
 ```
 
 ### Deployment Strateji Seçimi
+
 - **Dev/Test**: Recreate
 - **Çoğu Production**: Rolling Update
 - **Kritik Sistemler**: Blue-Green

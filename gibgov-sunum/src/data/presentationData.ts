@@ -865,53 +865,6 @@ docker volume prune                    # Orphan volume'ları sil`,
         ],
       },
       {
-        id: "docker-security",
-        title: "Docker Güvenlik",
-        duration: "4 dk",
-        content: [
-          {
-            type: "list",
-            content: "Güvenlik Best Practices",
-            items: [
-              "Root kullanıcı yerine non-root user kullanın",
-              "Resmi ve güvenilir base image'lar tercih edin",
-              "Image'ları vulnerability scanner ile tarayın (Trivy, Snyk)",
-              "Multi-stage build ile gereksiz dosyaları hariç tutun",
-              ".dockerignore dosyası kullanın",
-              "Secrets'ı environment variable olarak geçmeyin, Docker secrets kullanın",
-              "Read-only filesystem mümkünse",
-              "Resource limits tanımlayın (CPU, memory)",
-            ],
-          },
-          {
-            type: "code",
-            language: "dockerfile",
-            content: `# Güvenli Dockerfile örneği
-FROM node:20-alpine
-
-# Non-root user
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
-
-WORKDIR /app
-COPY --chown=appuser:appgroup . .
-
-# Minimize attack surface
-RUN npm ci --only=production && \\
-    npm cache clean --force && \\
-    rm -rf /tmp/*
-
-USER appuser
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s \\
-  CMD wget --quiet --tries=1 --spider http://localhost:3000/health || exit 1
-
-EXPOSE 3000
-CMD ["node", "server.js"]`,
-          },
-        ],
-      },
-      {
         id: "docker-cicd",
         title: "Docker + CI/CD",
         duration: "4 dk",
