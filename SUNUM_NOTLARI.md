@@ -326,15 +326,19 @@ docker compose up -d. Arka planda çalışıyor, terminali meşgul etmiyor. İş
 
 ### 4.1 Kubernetes Neden Gerekli?
 
-Docker ile container'lar oluşturmayı öğrendik, harika. Ama şimdi şöyle düşünelim: Bir container çalıştırmak kolay. Peki 10 tane container yöneteceksek? 100 tane? Ya da Netflix gibi binlerce container'ımız varsa?
+Docker ile container'lar oluşturmayı öğrendik, Ama şimdi şöyle düşünelim: Bir container çalıştırmak kolay. Peki 10 tane container yöneteceksek? 100 tane?
 
-Birkaç soru soralım kendimize: Gece 3'te bir container crash oldu, kim restart edecek? Cuma günü Black Friday kampanyası başladı, traffic 10 katına çıktı, yeni container'lar kim oluşturacak? Eski mühendis gitti, yeni mühendis geldi, sistemin nasıl çalıştığını nasıl anlayacak? Yeni versiyon deploy edeceğiz, kullanıcılar kesinti yaşamadan nasıl yapacağız?
+örneğin gece 3'te bir container crash oldu, kim restart edecek? traffic 10 katına çıktı, yeni container'lar kim oluşturacak? yeni versiyon deploy edeceğiz, kullanıcılar kesinti yaşamadan nasıl yapacağız?
 
-İşte Kubernetes - kısaca K8s diyoruz, çünkü K ile s arasında 8 harf var - tam olarak bu soruların cevabı. Container orchestration platformu deniyor. Orkestra şefinin müzisyenleri yönetmesi gibi, Kubernetes de container'larınızı yönetiyor.
+İşte Kubernetes tam olarak bu soruların cevabı.
 
-Üç temel özelliğine bakalım. Birincisi self-healing: Bir container crash olursa, Kubernetes otomatik olarak yenisini başlatıyor. Sizin müdahalenize gerek yok, gece uyurken bile sistem kendini iyileştiriyor. İkincisi auto-scaling: CPU kullanımı yükseldi mi, Kubernetes otomatik olarak yeni container'lar oluşturuyor. Trafik düştü mü, gereksiz container'ları kapatıyor. Kaynaklarınızı verimli kullanıyorsunuz. Üçüncüsü zero-downtime deployment: Yeni versiyon deploy ederken eski versiyon çalışmaya devam ediyor. Yeni versiyon tamamen hazır olunca trafik oraya yönlendiriliyor. Kullanıcılar hiçbir kesinti yaşamıyor.
+Üç temel özelliğine bakalım.
 
-Kubernetes nereden çıktı? Google'ın Borg adlı internal sisteminden esinlenilmiş. Google günde milyarlarca container çalıştırıyor - Gmail, YouTube, Search, hepsi container'lar üzerinde. 15 yıllık deneyimlerini alıp açık kaynak olarak paylaştılar. Şimdi Cloud Native Computing Foundation altında geliştiriliyor ve bulut dünyasının de facto standardı haline geldi.
+Birincisi self-healing: Bir container crash olursa, Kubernetes otomatik olarak yenisini başlatıyor. Sizin müdahalenize gerek yok, gece uyurken bile sistem kendini iyileştiriyor.
+
+İkincisi auto-scaling: CPU kullanımı yükseldi mi, Kubernetes otomatik olarak yeni container'lar oluşturuyor. Trafik düştü mü, gereksiz container'ları kapatıyor.
+
+Üçüncüsü zero-downtime deployment: Yeni versiyon deploy ederken eski versiyon çalışmaya devam ediyor. Yeni versiyon tamamen hazır olunca trafik oraya yönlendiriliyor. Kullanıcılar hiçbir kesinti yaşamıyor.
 
 ### 4.2 Mimari
 
@@ -344,13 +348,13 @@ Kubernetes mimarisini anlamak için onu iki ana parçaya ayıralım: Control Pla
 
 Control Plane'de 4 kritik bileşen var:
 
-API Server tüm iletişimin merkezidir. Siz kubectl komutu çalıştırdığınızda, o komut API Server'a gider. Başka bir pod cluster'daki bir servisi sorguladığında, API Server'a gider. Her şey buradan geçer. Bu yüzden API Server'ın yüksek erişilebilirliği kritik öneme sahiptir.
+API Server tüm iletişimin merkezidir. Siz kubectl komutu çalıştırdığınızda, o komut API Server'a gider. Her şey buradan geçer.
 
-etcd bir key-value veritabanıdır ve cluster'ın tüm state'ini tutar. Hangi pod nerede çalışıyor, hangi servis hangi pod'lara yönlendiriyor, configmap'ler ne içeriyor - hepsi burada kayıtlı. etcd çökerse, cluster'ın hafızası gider. Bu yüzden production'da etcd her zaman yedekli çalıştırılır.
+etcd bir key-value veritabanıdır ve cluster'ın tüm state'ini tutar. Hangi pod nerede çalışıyor, hangi servis hangi pod'lara yönlendiriyor, hepsi burada kayıtlı.
 
-Scheduler yeni oluşturulacak pod'lar için yer belirler. "Bu pod 2GB memory istiyor, hangi node'da 2GB boş yer var?" sorusuna cevap verir. Node'ların kaynak durumunu, pod'un gereksinimlerini, affinity kurallarını değerlendirir ve en uygun node'u seçer.
+Scheduler yeni oluşturulacak pod'lar için yer belirler. Node'ların kaynak durumunu, pod'un gereksinimlerini ve en uygun node'u seçer.
 
-Controller Manager cluster'ın istenen durumuyla gerçek durumunu sürekli karşılaştırır. Siz "3 replica çalışsın" dediniz, o 3 tane çalıştığından emin olur. Birisi öldü mü? Yenisini başlatır. Fazla mı var? Fazlalığı kapatır. Bu sürekli döngüye "reconciliation loop" deniyor.
+Controller Manager cluster'ın istenen durumuyla gerçek durumunu sürekli karşılaştırır. Siz "3 replica çalışsın" dediniz, o 3 tane çalıştığından emin olur. Birisi öldü mü? Yenisini başlatır. Fazla mı var? Fazlalığı kapatır.
 
 Worker Node'larda da 3 bileşen var:
 
@@ -358,7 +362,7 @@ kubelet her node'da çalışan bir agent'tır. Control Plane'den "bu pod'u çal�
 
 kube-proxy networking'den sorumludur. Bir pod başka bir servise bağlanmak istediğinde, kube-proxy o trafiği doğru pod'a yönlendirir. Aslında bir load balancer gibi çalışır.
 
-Container Runtime container'ları çalıştıran yazılımdır. Eskiden Docker kullanılıyordu, şimdi genellikle containerd kullanılıyor. Kubernetes "container runtime interface" denen bir standart tanımladı, bu standarda uyan her runtime kullanılabilir.
+Container Runtime container'ları çalıştıran yazılımdır.
 
 ### 4.3 Temel Objeler
 
@@ -366,91 +370,23 @@ _[Objeler listesini göster]_
 
 Kubernetes'te her şey bir objedir. Bu objeleri YAML dosyalarıyla tanımlarsınız ve kubectl apply komutuyla cluster'a uygularsınız. En sık karşılaşacağınız objelere bakalım.
 
-Pod, Kubernetes'in en küçük deploy edilebilir birimidir. İçinde bir veya daha fazla container olabilir. Pratikte çoğu zaman tek container olur ama bazen sidecar pattern'ı için birden fazla container kullanılır - mesela ana uygulama bir container'da, log toplayan agent başka bir container'da, aynı pod içinde.
+Pod, Kubernetes'in en küçük deploy edilebilir birimidir. İçinde bir veya daha fazla container olabilir.
 
-Deployment, pod'ların yöneticisidir. Siz "3 tane nginx çalıştır" dersiniz, Deployment 3 pod oluşturur. Birisi crash olursa yenisini yaratır. Yeni versiyon deploy etmek istediğinizde, Deployment rolling update yapar. Doğrudan pod oluşturmak yerine hep Deployment kullanmalısınız.
+Deployment, pod'ların yöneticisidir. Siz "3 tane nginx çalıştır" dersiniz, Deployment 3 pod oluşturur. Birisi crash olursa yenisini yaratır.
 
 Service, pod'lara sabit bir erişim noktası sağlar. Pod'ların IP adresleri sürekli değişir - pod ölür yenisi doğar, farklı IP alır. Ama Service IP'si sabit kalır. Diğer pod'lar servise IP veya isimle bağlanır, Service de trafiği arkadaki pod'lara dağıtır.
 
-Ingress, dış dünyadan gelen HTTP trafiğini yönetir. Tek bir IP'den birden fazla servise yönlendirme yapabilirsiniz. "/api" ile başlayan istekleri backend servisine, "/" ile başlayanları frontend servisine gönderebilirsiniz. SSL sertifikası yönetimi de Ingress üzerinden yapılır.
+Ingress, dış dünyadan gelen HTTP trafiğini yönetir. Tek bir IP'den birden fazla servise yönlendirme yapabilirsiniz. SSL sertifikası yönetimi de Ingress üzerinden yapılır.
 
-ConfigMap ve Secret konfigürasyon verilerini tutar. Environment variable'ları, config dosyalarını pod'un dışında tutarsınız. Pod değişse bile config aynı kalır. Secret'lar hassas veriler için - şifreler, API anahtarları gibi. Base64 encoded olarak saklanır, ama gerçek güvenlik için ek önlemler gerekir.
+ConfigMap ve Secret konfigürasyon verilerini tutar. Environment variable'ları, config dosyalarını pod'un dışında tutarsınız. Pod değişse bile config aynı kalır.
 
-### 4.4 Deployment Manifest
+<!-- ### 4.4 Helm -->
 
-_[Deployment YAML'ını göster]_
-
-Şimdi gerçek bir Deployment YAML'ına bakalım. Bu dosya Kubernetes'e ne istediğinizi söylüyor.
-
-```yaml
-spec:
-  replicas: 3
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 0
-```
-
-replicas: 3 diyor - 3 pod çalışsın. RollingUpdate stratejisi var, bu da yeni versiyon deploy ederken nasıl davranılacağını belirliyor. maxSurge: 1 demek geçici olarak 1 fazla pod olabilir, yani toplam 4 pod çalışabilir. maxUnavailable: 0 demek her zaman en az 3 pod hazır olmalı.
-
-Bu iki ayar birlikte ne sağlıyor? Sıfır downtime. Yeni pod ayağa kalkıp hazır olmadan eski pod asla kapatılmıyor. 3 pod çalışıyordu, 1 yeni pod ekleniyor, 4 oldu. Yeni pod hazır olduktan sonra 1 eski pod kapatılıyor, tekrar 3 oldu. Bu şekilde teker teker tüm pod'lar güncelleniyor.
-
-```yaml
-resources:
-  requests:
-    memory: "128Mi"
-    cpu: "100m"
-  limits:
-    memory: "256Mi"
-    cpu: "500m"
-```
-
-Resource yönetimi production'da kritik önem taşıyor. requests pod'un minimum ihtiyacını belirtiyor - Scheduler bu pod'u yerleştirirken en az bu kadar boş kaynak olan node arayacak. limits ise maksimum kullanımı belirtiyor - pod bundan fazlasını kullanamaz. Memory limit'i aşarsa pod OOMKilled olur yani öldürülür. CPU limit'i aşarsa throttle edilir yani yavaşlatılır.
-
-```yaml
-livenessProbe:
-  httpGet:
-    path: /health
-readinessProbe:
-  httpGet:
-    path: /ready
-```
-
-Health check'ler pod'un durumunu izlemek için kullanılır. livenessProbe "bu pod hala yaşıyor mu?" sorusuna cevap verir. Cevap hayırsa, Kubernetes pod'u restart eder. readinessProbe ise "bu pod trafik almaya hazır mı?" sorusuna cevap verir. Cevap hayırsa, Service bu pod'a trafik göndermez. Mesela uygulama açılırken database bağlantısını bekliyor olabilir - o sırada ready değildir ama alive'dır.
-
-### 4.5 kubectl Komutları
-
-_[Komutlar listesini göster]_
-
-Kubernetes ile günlük çalışırken en çok kullanacağınız komutlara bakalım. kubectl Kubernetes'in komut satırı aracı.
-
-```bash
-kubectl get pods              # Pod listesi
-kubectl describe pod <name>   # Pod detayı
-kubectl logs <pod> -f         # Log takibi
-kubectl exec -it <pod> -- sh  # Pod içine gir
-kubectl apply -f manifest.yaml  # Manifest uygula
-kubectl rollout undo deployment/app  # Rollback
-```
-
-kubectl get pods mevcut pod'ları listeler. Durumları, kaç kez restart olduklarını, ne kadar süredir çalıştıklarını görebilirsiniz. kubectl describe pod daha detaylı bilgi verir - events, resource kullanımı, hangi node'da çalıştığı gibi. Bir pod sorunluysa describe ile sebebe bakarsınız.
-
-kubectl logs pod'un stdout'unu gösterir. -f flag'i ile canlı takip edersiniz, yeni loglar geldikçe ekrana düşer. Hata ayıklarken vazgeçilmez.
-
-kubectl exec ile çalışan pod'un içine girip komut çalıştırabilirsiniz. Debug için bazen pod içinden ağ testleri yapmak, dosyalara bakmak gerekebilir.
-
-kubectl apply manifest dosyanızı cluster'a uygular. Deployment güncellemek, yeni servis eklemek, config değiştirmek - hep apply kullanırsınız.
-
-Ve belki de en önemlisi kubectl rollout undo. Yeni versiyon deploy ettiniz, bir şeyler ters gitti. Bu komutla bir önceki versiyona anında geri dönersiniz. Kubernetes önceki versiyonların bilgisini tutar, rollback saniyeler içinde gerçekleşir.
-
-### 4.6 Helm
-
-_[Helm kodunu göster]_
+<!-- _[Helm kodunu göster]_
 
 Kubernetes manifest dosyaları büyüyünce yönetmek zorlaşıyor. 10 tane mikro servisiniz var, her birinin Deployment'ı, Service'i, ConfigMap'i var. Staging ve production için farklı değerler kullanmanız gerekiyor. Her yerde aynı şeyleri tekrar ediyorsunuz.
 
-Helm, Kubernetes için bir package manager'dır. apt veya npm gibi düşünün ama Kubernetes uygulamaları için.
+Helm, Kubernetes için bir package manager'dır.npm gibi düşünün ama Kubernetes uygulamaları için.
 
 values.yaml adlı bir dosyada değişkenlerinizi tanımlıyorsunuz:
 
@@ -465,7 +401,7 @@ Template dosyalarında bu değerleri kullanıyorsunuz. Farklı ortamlar için fa
 
 Kurulum tek komutla: helm install myapp ./chart -f values-prod.yaml. Güncelleme: helm upgrade. Geri alma: helm rollback. Kaldırma: helm uninstall. Tüm Kubernetes objeleriniz tek birim olarak yönetiliyor.
 
----
+--- -->
 
 ## BÖLÜM 5: DEPLOYMENT STRATEGIES (5-6 dakika)
 
@@ -473,11 +409,11 @@ Kurulum tek komutla: helm install myapp ./chart -f values-prod.yaml. Güncelleme
 
 Şimdi bugünkü sunumun belki de en kritik konusuna geldik: Deployment stratejileri. Bu konu neden bu kadar önemli? Çünkü yanlış strateji seçimi doğrudan para kaybına, müşteri kaybına ve itibar kaybına yol açıyor.
 
-Bir rakam vereyim: Amazon'un hesaplamalarına göre, 1 dakikalık downtime şirkete yaklaşık 220.000 dolar kaybettiriyor. Dakikada 220.000 dolar. Bu sadece Amazon için değil, sizin şirketiniz için de orantılı bir maliyet var. E-ticaret sitesiyseniz, Black Friday'de 5 dakikalık kesinti ayın gelirini götürebilir. SaaS ürününüz varsa, kesinti müşteri güvenini sarsar, rakibe geçerler.
+Bir rakam vereyim: Amazon'un hesaplamalarına göre, 1 dakikalık downtime şirkete yaklaşık 220.000 dolar kaybettiriyor. Dakikada 220.000 dolar.
 
 Peki doğru stratejiyi nasıl seçeceğiz? İki temel faktöre bakmalıyız. Birincisi risk toleransınız: Bu sistem ne kadar kritik? Internal bir dashboard mı yoksa canlı ödeme sistemi mi? İkincisi kaynak durumunuz: İki kat sunucu maliyetini karşılayabilir misiniz? Bazı stratejiler daha fazla kaynak gerektiriyor.
 
-Dört ana deployment stratejisi var ve her birinin kendine göre avantajları ve dezavantajları var. Hepsini inceleyelim ki hangi durumda hangisini kullanacağınızı bilin.
+Dört ana deployment stratejisi var ve her birinin kendine göre avantajları ve dezavantajları var. Hepsini inceleyelim ki hangi durumda hangisini kullanacağımızı bilelim.
 
 ### 5.2 Recreate
 
@@ -490,11 +426,11 @@ strategy:
   type: Recreate
 ```
 
-Avantajı ne? Çok basit, anlaşılması kolay. Ayrıca clean state garantisi var - eski ve yeni versiyon asla aynı anda çalışmıyor. Bazı durumlarda bu gerekli olabiliyor, mesela database schema değişikliği yaptıysanız ve eski kod yeni şemayla çalışamıyorsa.
+Avantajı ne? Çok basit, anlaşılması kolay. Ayrıca clean state garantisi var - eski ve yeni versiyon asla aynı anda çalışmıyor.
 
 Dezavantajı ne? Downtime var. Eski versiyon kapanıyor, yeni versiyon açılıyor, arada bir boşluk oluyor. Bu boşlukta kullanıcılar servise erişemiyor.
 
-Ne zaman kullanmalı? Development ve test ortamlarında rahatlıkla kullanabilirsiniz, downtime kimseyi etkilemiyor. Ya da breaking change yapıyorsanız ve iki versiyonun aynı anda çalışması mümkün değilse.
+Ne zaman kullanmalı? Development ve test ortamlarında rahatlıkla kullanabilirsiniz, downtime kimseyi etkilemiyor.
 
 Production'da müşteriye dönük sistemler için uygun değil.
 
@@ -516,7 +452,7 @@ Mantık şu: 3 pod'unuz var. Önce 1 yeni pod ekleniyor, 4 oldu. Yeni pod hazır
 
 Avantajları: Sıfır downtime - kullanıcılar kesinti yaşamıyor. Resource efficient - sadece geçici olarak 1 ekstra pod lazım, kalıcı değil.
 
-Dezavantajı: Güncelleme sırasında eski ve yeni versiyon aynı anda çalışıyor. Bu ne demek? Bir kullanıcının isteği eski versiyona gidebilir, bir sonraki isteği yeni versiyona. API'niz backward compatible olmalı. Yeni versiyon eskinin beklediği response'ları verememiyorsa sorun çıkar.
+Dezavantajı: Güncelleme sırasında eski ve yeni versiyon aynı anda çalışıyor. Bu ne demek? Bir kullanıcının isteği eski versiyona gidebilir, bir sonraki isteği yeni versiyona.
 
 Çoğu proje için Rolling Update yeterli ve önerilen strateji. Eğer API'niz backward compatible tasarlanmışsa - ki bu zaten iyi bir pratik - Rolling Update ile devam edin.
 
@@ -541,13 +477,13 @@ Avantajları: Anında geçiş, anında geri dönüş. Test edilmiş versiyona ge
 
 Dezavantajı: İki kat kaynak gerekiyor. 3 pod yerine 6 pod çalışıyor. Bir ortam aktif, biri beklemede. Altyapı maliyetiniz artıyor.
 
-Ne zaman kullanmalı? Kritik production sistemlerinde. Finans uygulamaları, e-ticaret siteleri, ödeme sistemleri - hata kabul edilemeyecek yerlerde. Maliyet artışı, downtime riskine kıyasla kabul edilebilir.
+Ne zaman kullanmalı? Kritik production sistemlerinde. Finans uygulamaları, e-ticaret siteleri, ödeme sistemleri - hata kabul edilemeyecek yerlerde.
 
 ### 5.5 Canary
 
 _[Canary diyagramını göster]_
 
-Dördüncü strateji en düşük riskli olanı: Canary deployment. İsim nereden geliyor? Eskiden madenciler, madene girerken yanlarında kanarya kuşu götürürmüş. Zehirli gaz sızıntısı olursa kanarya önce etkilenir, madenciler uyarılmış olur. Aynı mantık burada da geçerli - küçük bir grup kullanıcı önce yeni versiyonu deneyimliyor.
+Dördüncü strateji en düşük riskli olanı: küçük bir grup kullanıcı önce yeni versiyonu deneyimliyor.
 
 Akış şöyle: Önce trafiğin sadece %5'ini yeni versiyona yönlendiriyorsunuz. Metrikleri izliyorsunuz - error rate arttı mı, latency yükseldi mi, conversion düştü mü. Her şey normalse %25'e çıkıyorsunuz. Sonra %50, sonra %75, en sonunda %100. Yavaş yavaş, kontrollü bir şekilde tüm trafiği yeni versiyona taşıyorsunuz.
 
@@ -564,7 +500,7 @@ route:
 
 Avantajı: Minimum risk. Yeni versiyonda ciddi bir bug varsa, sadece %5 kullanıcı etkileniyor, %95'i sağlam versiyon kullanmaya devam ediyor. Sorunu tespit ettiğinizde canary'yi kapatıyorsunuz, %5 bile etkilenmiyor artık.
 
-Dezavantajları: Yavaş rollout - tam geçiş saatler, hatta günler alabilir. Ve monitoring şart - metrikleri sürekli izlemezseniz canary'nin anlamı kalmıyor. Observability altyapınız güçlü olmalı.
+Dezavantajları: Yavaş rollout - tam geçiş saatler, hatta günler alabilir. Ve monitoring şart - metrikleri sürekli izlemezseniz canary'nin anlamı kalmıyor.
 
 Netflix, Google, Facebook gibi büyük şirketler Canary kullanıyor. Milyonlarca kullanıcınız varsa, %1'lik bir canary bile on binlerce kişi demek - yeterli veri topluyorsunuz.
 
@@ -572,13 +508,16 @@ Netflix, Google, Facebook gibi büyük şirketler Canary kullanıyor. Milyonlarc
 
 _[GitOps diyagramını göster]_
 
-Son olarak modern deployment dünyasının standardı haline gelen bir yaklaşımdan bahsedelim: GitOps.
+Son olarak modern deployment olan GitOps.
 
-GitOps'un prensibi çok basit: Git, tek gerçek kaynaktır - Single Source of Truth. Kubernetes manifest'leriniz, Helm chart'larınız, konfigürasyonlarınız - hepsi Git'te saklanıyor. Ve sadece Git'te olan şey cluster'da çalışıyor.
+GitOps'un prensibi çok basit: Kubernetes manifest'leriniz, Helm chart'larınız, konfigürasyonlarınız - hepsi Git'te saklanıyor. Ve sadece Git'te olan şey cluster'da çalışıyor.
 
-ArgoCD bu prensibi uygulayan en popüler araçlardan biri. ArgoCD Git repository'nizi sürekli izliyor. Siz Git'e bir değişiklik push'ladığınızda, ArgoCD bunu görüyor ve cluster'ı otomatik olarak senkronize ediyor. Kimsenin kubectl apply çalıştırmasına gerek yok.
+Bizim projelerimizde de kullandığımız, ArgoCD bu prensibi uygulayan en popüler araçlardan biri. ArgoCD Git repository'nizi sürekli izliyor. Siz Git'e bir değişiklik push'ladığınızda, ArgoCD bunu görüyor ve cluster'ı otomatik olarak senkronize ediyor.
 
-Bu yaklaşımın birçok avantajı var. Birincisi audit trail: Kim ne zaman ne değiştirdi? Git history'de. Compliance gereksinimleriniz varsa, bu çok değerli. İkincisi easy rollback: Bir şey ters giderse git revert ile anında geri alabilirsiniz. Üçüncüsü review process: Deployment değişiklikleri de normal kod gibi PR süreci geçiyor. Takım arkadaşınız review ediyor, onaylıyor, sonra merge oluyor.
+Bu yaklaşımın birçok avantajı var.
+Birincisi audit trail: Kim ne zaman ne değiştirdi? Git history'de.
+İkincisi easy rollback: Bir şey ters giderse git revert ile anında geri alabilirsiniz.
+Üçüncüsü review process: Deployment değişiklikleri de normal kod gibi PR süreci geçiyor. Takım arkadaşınız review ediyor, onaylıyor, sonra merge oluyor.
 
 Artık "production'a kim deploy etti?" sorusu yok. Git history'ye bakıyorsunuz, orada yazıyor.
 
@@ -586,88 +525,8 @@ Artık "production'a kim deploy etti?" sorusu yok. Git history'ye bakıyorsunuz,
 
 ## KAPANIŞ (2-3 dakika)
 
-### Özet
-
-Bugün birlikte uzun bir yolculuk yaptık. Beş farklı ama birbiriyle bağlantılı konuyu ele aldık. Şimdi bunları bir özet geçelim ve bütünü görelim.
-
-GitHub Actions ile başladık. CI/CD pipeline'larımızı nasıl oluşturacağımızı, testleri nasıl otomatize edeceğimizi, secrets yönetimini nasıl yapacağımızı gördük. Artık her push'ta kodunuzun test edildiğini, build edildiğini biliyorsunuz.
-
-Vercel ve Netlify ile devam ettik. Modern web uygulamalarını saniyeler içinde nasıl deploy edeceğimizi, preview URL'lerin ne kadar güçlü bir özellik olduğunu, serverless function'ların ne zaman işe yarayacağını konuştuk.
-
-Docker ile "benim bilgisayarımda çalışıyordu" problemini ele aldık. Container kavramını, VM'lerden farkını, multi-stage build ile optimize image oluşturmayı, Docker Compose ile multi-container uygulamaları öğrendik.
-
-Kubernetes ile container orchestration dünyasına girdik. Yüzlerce container'ı nasıl yöneteceğimizi, self-healing ve auto-scaling kavramlarını, Deployment ve Service objelerini, Helm ile package management'ı inceledik.
-
-Son olarak deployment stratejilerini ele aldık. Recreate, Rolling Update, Blue-Green, Canary - her birinin ne zaman kullanılacağını, avantaj ve dezavantajlarını, GitOps yaklaşımını gördük.
-
-### Sonraki Adımlar
-
-Peki bundan sonra ne yapmalı? Deneyim seviyenize göre farklı önerilerim var.
-
-Junior arkadaşlar için önerim şu: Docker ile başlayın. Mevcut bir projeniz varsa, onun için bir Dockerfile yazın. Local'de build edip çalıştırın. "Benim makinemde çalışıyordu" problemini bir kez çözdüğünüzde, Docker'ın değerini anlayacaksınız. Sonra GitHub Actions'a geçin. Basit bir CI pipeline kurun - push'ta test çalıştırsın. Adım adım karmaşıklaştırın.
-
-Mid-level arkadaşlar için önerim: Mevcut projenize Docker entegre edin. Development ortamını Docker Compose ile ayağa kaldırın. Vercel veya Netlify hesabı açın, bir yan proje deploy edin. Kubernetes'i local'de deneyin - Docker Desktop veya minikube ile başlayabilirsiniz. Production'a çıkmadan önce konseptleri öğrenin.
-
-Senior arkadaşlar için önerim: GitOps workflow kurun. ArgoCD veya Flux deneyin. Canary deployment implement edin - Istio veya Linkerd ile traffic splitting yapabilirsiniz. Production monitoring ve alerting sisteminizi gözden geçirin. Observability'yi ciddiye alın - çünkü göremediğiniz şeyi yönetemezsiniz.
-
-### Kapanış Sözü
-
-Son olarak bir şey söylemek istiyorum. Bugün birçok araç ve teknoloji konuştuk. Ama unutmayın: CI/CD sadece bir araç seti değil, bir kültür değişimi.
-
-DevOps dünyasında çok sevilen bir motto var: "Deploy often, deploy small, monitor everything." Sık deploy yapın. Küçük değişiklikler yapın. Her şeyi izleyin.
-
-Eskiden deployment büyük bir olaydı. Aylar öncesinden planlanır, deployment günü herkes geç saatlere kalır, bir şey patlarsa panik başlardı. Bu model artık çalışmıyor. Rekabet çok hızlı, müşteri beklentileri çok yüksek.
-
-Bugün konuştuğumuz araçlar ve pratiklerle, deployment artık korkulacak bir şey olmaktan çıkar. Günlük rutininizin sıradan bir parçası haline gelir. Güvenle deploy edersiniz çünkü testleriniz var, rollback stratejiniz var, monitoring'iniz var.
-
-Bu dönüşümü yapan ekiplerin hem daha mutlu hem de daha üretken olduğunu görüyoruz. Çünkü geceleri uyuyabiliyorlar, tatillerinde bilgisayar açmak zorunda kalmıyorlar, "acaba bir şey bozuldu mu" endişesi yaşamıyorlar.
-
-Size bu yolculukta başarılar diliyorum.
-
----
-
 ### Sorular?
 
 Evet arkadaşlar, sunumun içerik kısmını tamamladık. Şimdi sorularınızı alabilirim. Herhangi bir konu hakkında - GitHub Actions, Docker, Kubernetes, deployment stratejileri, hatta bugün bahsetmediğimiz ama merak ettiğiniz konular olabilir. Buyurun.
 
 _[5-10 dakika soru-cevap için ayır]_
-
----
-
-## EK: HIZLI REFERANS KARTI
-
-### GitHub Actions - Temel Workflow
-
-```yaml
-name: CI
-on: [push, pull_request]
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: npm ci && npm test
-```
-
-### Docker - Temel Komutlar
-
-```bash
-docker build -t app .        # Image oluştur
-docker run -p 3000:3000 app  # Container çalıştır
-docker compose up -d         # Compose stack başlat
-```
-
-### Kubernetes - Temel Komutlar
-
-```bash
-kubectl apply -f manifest.yaml   # Deploy
-kubectl get pods                 # Pod listesi
-kubectl rollout undo deployment  # Rollback
-```
-
-### Deployment Strateji Seçimi
-
-- **Dev/Test**: Recreate
-- **Çoğu Production**: Rolling Update
-- **Kritik Sistemler**: Blue-Green
-- **En Düşük Risk**: Canary
