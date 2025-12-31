@@ -478,61 +478,6 @@ steps:
         ],
       },
       {
-        id: "vn-serverless",
-        title: "Serverless Functions",
-        duration: "5 dk",
-        content: [
-          {
-            type: "code",
-            language: "typescript",
-            content: `// Vercel Edge Function
-// api/hello.ts
-export const config = {
-  runtime: 'edge',
-};
-
-export default function handler(request: Request) {
-  return new Response(JSON.stringify({ message: 'Hello from Edge!' }), {
-    headers: { 'content-type': 'application/json' },
-  });
-}
-
-// Vercel Serverless Function
-// api/data.ts
-import type { VercelRequest, VercelResponse } from '@vercel/node';
-
-export default async function handler(
-  req: VercelRequest,
-  res: VercelResponse
-) {
-  const data = await fetchFromDatabase();
-  res.status(200).json(data);
-}`,
-          },
-          {
-            type: "code",
-            language: "typescript",
-            content: `// Netlify Function
-// netlify/functions/hello.ts
-import type { Handler } from '@netlify/functions';
-
-export const handler: Handler = async (event, context) => {
-  return {
-    statusCode: 200,
-    body: JSON.stringify({ message: 'Hello from Netlify!' }),
-  };
-};
-
-// Netlify Edge Function
-// netlify/edge-functions/geo.ts
-export default async (request: Request, context: Context) => {
-  const country = context.geo.country?.code || 'Unknown';
-  return new Response(\`Hello from \${country}!\`);
-};`,
-          },
-        ],
-      },
-      {
         id: "vn-pricing",
         title: "Fiyatlandırma Karşılaştırması",
         duration: "3 dk",

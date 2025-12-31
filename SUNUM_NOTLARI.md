@@ -196,21 +196,6 @@ Netlify ise TOML formatını tercih ediyor:
 
 Netlify'ın burada çok güzel bir özelliği var: Context bazlı konfigürasyon. Production deployment için bir API URL'i, preview deployment'lar için farklı bir API URL'i tanımlayabiliyorsunuz. Vercel'de de aynı şeyi yapabilirsiniz ama dashboard üzerinden, dosya bazlı değil.
 
-### 2.4 Serverless Functions
-
-_[Function kodlarını göster]_
-
-Her iki platformda da serverless function yazabiliyorsunuz. Bu, basit backend ihtiyaçlarınızı karşılayabileceğiniz anlamına geliyor. Tam teşekküllü bir backend server'a ihtiyacınız olmadan API endpoint'leri oluşturabilirsiniz.
-
-Vercel'de iki tür function var:
-
-Serverless Functions ve Edge Functions. Serverless Functions klasik Lambda tarzı, Node.js runtime'da çalışıyor.
-
-Edge Functions ise kullanıcıya en yakın lokasyonda çalışıyor. Bir kullanıcı İstanbul'daysa, function İstanbul'daki edge node'da çalışır. Bu da çok düşük latency demek.
-
-Netlify’da Functions ve Edge Functions’a ek olarak Background Functions da var.
-Uzun süren işler için ideal: 15 dakikaya kadar arka planda çalışır, kullanıcıyı bekletmiyor.
-
 ### 2.5 Hangisini Seçmeli?
 
 _[Karar ağacını göster]_
@@ -348,7 +333,7 @@ Kubernetes mimarisini anlamak için onu iki ana parçaya ayıralım: Control Pla
 
 Control Plane'de 4 kritik bileşen var:
 
-API Server tüm iletişimin merkezidir. Siz kubectl komutu çalıştırdığınızda, o komut API Server'a gider. Her şey buradan geçer.
+API Server tüm iletişimin merkezidir. Siz komutu çalıştırdığınızda, o komut API Server'a gider. Her şey buradan geçer.
 
 etcd bir key-value veritabanıdır ve cluster'ın tüm state'ini tutar. Hangi pod nerede çalışıyor, hangi servis hangi pod'lara yönlendiriyor, hepsi burada kayıtlı.
 
@@ -368,7 +353,7 @@ Container Runtime container'ları çalıştıran yazılımdır.
 
 _[Objeler listesini göster]_
 
-Kubernetes'te her şey bir objedir. Bu objeleri YAML dosyalarıyla tanımlarsınız ve kubectl apply komutuyla cluster'a uygularsınız. En sık karşılaşacağınız objelere bakalım.
+Kubernetes'te her şey bir objedir. Bu objeleri YAML dosyalarıyla tanımlarsınız. En sık karşılaşacağınız objelere bakalım.
 
 Pod, Kubernetes'in en küçük deploy edilebilir birimidir. İçinde bir veya daha fazla container olabilir.
 
@@ -515,7 +500,7 @@ GitOps'un prensibi çok basit: Kubernetes manifest'leriniz, Helm chart'larınız
 Bizim projelerimizde de kullandığımız, ArgoCD bu prensibi uygulayan en popüler araçlardan biri. ArgoCD Git repository'nizi sürekli izliyor. Siz Git'e bir değişiklik push'ladığınızda, ArgoCD bunu görüyor ve cluster'ı otomatik olarak senkronize ediyor.
 
 Bu yaklaşımın birçok avantajı var.
-Birincisi audit trail: Kim ne zaman ne değiştirdi? Git history'de.
+Birincisi: Kim ne zaman ne değiştirdi? Git history'de görebilirsiniz.
 İkincisi easy rollback: Bir şey ters giderse git revert ile anında geri alabilirsiniz.
 Üçüncüsü review process: Deployment değişiklikleri de normal kod gibi PR süreci geçiyor. Takım arkadaşınız review ediyor, onaylıyor, sonra merge oluyor.
 
